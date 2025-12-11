@@ -1,0 +1,33 @@
+---
+# Default variables for awx_projects role
+
+# List of projects to create in AWX
+# Each project is a dictionary with the following keys:
+#   - name: (required) Name of the project
+#   - scm_type: (optional) SCM type (git, svn, hg, insights, archive), defaults to 'git'
+#   - scm_url: (optional) URL of the SCM repository
+#   - scm_branch: (optional) Branch to use for the project
+#   - scm_refspec: (optional) Refspec to use for the project
+#   - scm_credential: (optional) Name of the credential to use for SCM
+#   - organization: (optional) Organization name
+#   - description: (optional) Description of the project
+#   - scm_clean: (optional) Clean the SCM checkout before update
+#   - scm_delete_on_update: (optional) Delete the SCM checkout before update
+#   - scm_track_submodules: (optional) Track submodules
+#   - scm_update_on_launch: (optional) Update project on launch
+#   - scm_update_cache_timeout: (optional) Cache timeout in seconds
+#   - state: (optional) State of the project (present/absent), defaults to 'present'
+awx_projects: []
+
+# Default values for projects (used when not specified in awx_projects list)
+awx_project_defaults:
+  scm_type: 'git'
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+

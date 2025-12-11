@@ -1,0 +1,38 @@
+---
+# Main tasks for awx_projects role
+
+- name: Validate awx_projects is a list
+  assert:
+    that:
+      - awx_projects is defined
+      - awx_projects is iterable
+    fail_msg: "awx_projects must be defined as a list"
+    quiet: true
+
+- name: Create or update AWX projects
+  awx.awx.project:
+    name: "{{ item.name }}"
+    scm_type: "{{ item.scm_type | default(awx_project_defaults.scm_type) }}"
+    scm_url: "{{ item.scm_url | default(omit) }}"
+    scm_branch: "{{ item.scm_branch | default(omit) }}"
+    scm_refspec: "{{ item.scm_refspec | default(omit) }}"
+    scm_credential: "{{ item.scm_credential | default(omit) }}"
+    organization: "{{ item.organization | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+    scm_clean: "{{ item.scm_clean | default(omit) }}"
+    scm_delete_on_update: "{{ item.scm_delete_on_update | default(omit) }}"
+    scm_track_submodules: "{{ item.scm_track_submodules | default(omit) }}"
+    scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
+    scm_update_cache_timeout: "{{ item.scm_update_cache_timeout | default(omit) }}"
+    state: "{{ item.state | default(awx_project_defaults.state) }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_projects }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  when: awx_projects | length > 0
+
