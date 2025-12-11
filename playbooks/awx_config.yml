@@ -1,0 +1,56 @@
+- hosts: "{{ targets }}"
+  vars:
+    awx_credentials:
+      - name: "Default Machine Credential"
+        ssh_key_path: "{{ ansible_ssh_key_path }}"
+    awx_projects:
+      - name: "k0rdent"
+        scm_type: "git"
+        scm_url: "{{ project_scm_url }}"
+        scm_branch: "main"
+        scm_clean: true
+        scm_delete_on_update: true
+        scm_track_submodules: false
+        scm_update_on_launch: true
+        scm_update_cache_timeout: 120
+        organization: "Default"
+        description: "k0rdent project"
+    awx_inventories:
+      - name: "k0rdent"
+        organization: "Default"
+        description: "k0rdent inventory"
+        inventory_sources:
+          - name: "k0rdent"
+            source_project: "k0rdent"
+            source_path: "{{ inventory_source_path }}"
+            overwrite: true
+            overwrite_vars: true
+            update_on_launch: true
+            update_cache_timeout: 120
+    awx_instance_groups:
+      - name: "default"
+        is_container_group: true
+        pod_spec_override: |
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            namespace: awx
+          spec:
+            serviceAccountName: awx-inventory-reader
+            automountServiceAccountToken: true
+            containers:
+              - image: quay.io/ansible/awx-ee:latest
+                name: worker
+                args:
+                  - ansible-runner
+                  - worker
+                  - '--private-data-dir=/runner'
+                resources:
+                  requests:
+                    cpu: 250m
+                    memory: 100Mi
+  roles:
+    - awx_credentials
+    - awx_projects
+    - awx_inventories
+    - awx_instance_groups
