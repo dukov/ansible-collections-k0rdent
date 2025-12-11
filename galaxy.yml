@@ -9,7 +9,8 @@ description: Collection with ansible automation for k0rdent
 license: GPL-3.0-or-later
 tags:
   - k0rdent
-dependencies: {}
+dependencies:
+  "awx.awx": ">=24.6.1"
 repository: https://github.com/dukov/ansible-collections-k0rdent
 documentation: http://docs.example.com
 homepage: http://example.com

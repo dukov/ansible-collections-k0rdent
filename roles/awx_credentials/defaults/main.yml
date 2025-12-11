@@ -1,0 +1,28 @@
+---
+# Default variables for awx_credentials role
+
+# List of credentials to create in AWX
+# Each credential is a dictionary with the following keys:
+#   - name: (required) Name of the credential
+#   - credential_type: (optional) Type of credential, defaults to 'Machine'
+#   - username: (optional) Username for the credential, defaults to 'ansible'
+#   - ssh_key: (optional) SSH private key content
+#   - ssh_key_path: (optional) Path to SSH private key file (alternative to ssh_key)
+#   - organization: (optional) Organization name
+#   - description: (optional) Description of the credential
+#   - state: (optional) State of the credential (present/absent), defaults to 'present'
+awx_credentials: []
+
+# Default values for credentials (used when not specified in awx_credentials list)
+awx_credential_defaults:
+  credential_type: 'Machine'
+  username: 'ansible'
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+
