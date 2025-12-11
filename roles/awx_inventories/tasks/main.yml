@@ -24,7 +24,6 @@
   loop: "{{ awx_inventories }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
   when: awx_inventories | length > 0
 
 - name: Create or update AWX inventory sources
@@ -53,5 +52,3 @@
     - awx_inventories | length > 0
     - item.0.inventory_sources is defined
     - item.0.inventory_sources | length > 0
-  no_log: true
-

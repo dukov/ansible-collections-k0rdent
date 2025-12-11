@@ -34,6 +34,5 @@
   loop: "{{ awx_projects }}"
   loop_control:
     label: "{{ item.name }}"
-  no_log: true
   when: awx_projects | length > 0
 
