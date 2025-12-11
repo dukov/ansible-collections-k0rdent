@@ -1,0 +1,31 @@
+---
+# Main tasks for awx_instance_groups role
+
+- name: Validate awx_instance_groups is a list
+  assert:
+    that:
+      - awx_instance_groups is defined
+      - awx_instance_groups is iterable
+    fail_msg: "awx_instance_groups must be defined as a list"
+    quiet: true
+
+- name: Create or update AWX instance groups
+  awx.awx.instance_group:
+    name: "{{ item.name }}"
+    instances: "{{ item.instances | default(omit) }}"
+    policy_instance_minimum: "{{ item.policy_instance_minimum | default(omit) }}"
+    policy_instance_percentage: "{{ item.policy_instance_percentage | default(omit) }}"
+    policy_instance_list: "{{ item.policy_instance_list | default(omit) }}"
+    is_container_group: "{{ item.is_container_group | default(omit) }}"
+    pod_spec_override: "{{ item.pod_spec_override | default(omit) }}"
+    state: "{{ item.state | default(awx_instance_group_defaults.state) }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_instance_groups }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: awx_instance_groups | length > 0
+

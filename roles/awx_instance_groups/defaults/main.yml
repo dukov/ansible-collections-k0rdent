@@ -1,0 +1,26 @@
+---
+# Default variables for awx_instance_groups role
+
+# List of instance groups to create in AWX
+# Each instance group is a dictionary with the following keys:
+#   - name: (required) Name of the instance group
+#   - instances: (optional) List of instance names to add to the group
+#   - policy_instance_minimum: (optional) Minimum number of instances
+#   - policy_instance_percentage: (optional) Percentage of instances to use
+#   - policy_instance_list: (optional) List of specific instances for policy
+#   - is_container_group: (optional) Whether this is a container group (default: false)
+#   - pod_spec_override: (optional) Pod specification override for container groups
+#   - state: (optional) State of the instance group (present/absent), defaults to 'present'
+awx_instance_groups: []
+
+# Default values for instance groups (used when not specified in awx_instance_groups list)
+awx_instance_group_defaults:
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+
