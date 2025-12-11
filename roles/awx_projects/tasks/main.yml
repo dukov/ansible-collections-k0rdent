@@ -24,6 +24,7 @@
     scm_track_submodules: "{{ item.scm_track_submodules | default(omit) }}"
     scm_update_on_launch: "{{ item.scm_update_on_launch | default(omit) }}"
     scm_update_cache_timeout: "{{ item.scm_update_cache_timeout | default(omit) }}"
+    allow_override: "{{ item.allow_override | default(omit) }}"
     state: "{{ item.state | default(awx_project_defaults.state) }}"
     controller_host: "{{ awx_host }}"
     controller_username: "{{ awx_username }}"

@@ -1,0 +1,57 @@
+---
+# Main tasks for awx_inventories role
+
+- name: Validate awx_inventories is a list
+  assert:
+    that:
+      - awx_inventories is defined
+      - awx_inventories is iterable
+    fail_msg: "awx_inventories must be defined as a list"
+    quiet: true
+
+- name: Create or update AWX inventories
+  awx.awx.inventory:
+    name: "{{ item.name }}"
+    organization: "{{ item.organization | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+    variables: "{{ item.variables | default(omit) }}"
+    state: "{{ item.state | default(awx_inventory_defaults.state) }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_inventories }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  when: awx_inventories | length > 0
+
+- name: Create or update AWX inventory sources
+  awx.awx.inventory_source:
+    name: "{{ item.1.name }}"
+    inventory: "{{ item.0.name }}"
+    source: "{{ item.1.source | default(omit) }}"
+    source_project: "{{ item.1.source_project | default(omit) }}"
+    source_path: "{{ item.1.source_path | default(omit) }}"
+    credential: "{{ item.1.credential | default(omit) }}"
+    overwrite: "{{ item.1.overwrite | default(omit) }}"
+    overwrite_vars: "{{ item.1.overwrite_vars | default(omit) }}"
+    update_on_launch: "{{ item.1.update_on_launch | default(omit) }}"
+    update_cache_timeout: "{{ item.1.update_cache_timeout | default(omit) }}"
+    source_vars: "{{ item.1.source_vars | default(omit) }}"
+    state: "{{ item.1.state | default('present') }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_inventories | subelements('inventory_sources', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }} - {{ item.1.name }}"
+  when:
+    - awx_inventories | length > 0
+    - item.0.inventory_sources is defined
+    - item.0.inventory_sources | length > 0
+  no_log: true
+

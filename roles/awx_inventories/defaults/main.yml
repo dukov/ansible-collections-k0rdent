@@ -1,0 +1,36 @@
+---
+# Default variables for awx_inventories role
+
+# List of inventories to create in AWX
+# Each inventory is a dictionary with the following keys:
+#   - name: (required) Name of the inventory
+#   - organization: (optional) Organization name
+#   - description: (optional) Description of the inventory
+#   - variables: (optional) Inventory variables in YAML or JSON format
+#   - inventory_sources: (optional) List of inventory sources for this inventory
+#     Each inventory source is a dictionary with:
+#       - name: (required) Name of the inventory source
+#       - source: (optional) Source type (scm, ec2, gce, azure_rm, vmware, openstack, etc.)
+#       - source_project: (optional) Project name for SCM-based sources
+#       - source_path: (optional) Path within the project for SCM-based sources
+#       - credential: (optional) Credential name for the source
+#       - overwrite: (optional) Overwrite variables (default: false)
+#       - overwrite_vars: (optional) Overwrite variables (default: false)
+#       - update_on_launch: (optional) Update on launch (default: false)
+#       - update_cache_timeout: (optional) Cache timeout in seconds
+#       - source_vars: (optional) Source-specific variables
+#       - state: (optional) State (present/absent), defaults to 'present'
+#   - state: (optional) State of the inventory (present/absent), defaults to 'present'
+awx_inventories: []
+
+# Default values for inventories (used when not specified in awx_inventories list)
+awx_inventory_defaults:
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+
