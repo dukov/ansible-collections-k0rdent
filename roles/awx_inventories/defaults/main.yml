@@ -25,6 +25,12 @@ awx_inventories: []
 
 # Default values for inventories (used when not specified in awx_inventories list)
 awx_inventory_defaults:
+  organization: "Default"
+  description: "k0rdent inventory"
+  overwrite: true
+  overwrite_vars: true
+  update_on_launch: true
+  update_cache_timeout: 120
   state: 'present'
 
 # AWX connection settings (read from environment variables)

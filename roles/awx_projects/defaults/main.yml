@@ -23,6 +23,15 @@ awx_projects: []
 awx_project_defaults:
   scm_type: 'git'
   state: 'present'
+  scm_branch: "main"
+  scm_clean: true
+  scm_delete_on_update: true
+  scm_track_submodules: false
+  scm_update_on_launch: true
+  scm_update_cache_timeout: 120
+  allow_override: true
+  organization: "Default"
+  description: "k0rdent project"
 
 # AWX connection settings (read from environment variables)
 awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"

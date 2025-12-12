@@ -15,6 +15,7 @@ awx_instance_groups: []
 
 # Default values for instance groups (used when not specified in awx_instance_groups list)
 awx_instance_group_defaults:
+  is_container_group: true
   state: 'present'
 
 # AWX connection settings (read from environment variables)
