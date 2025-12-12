@@ -6,6 +6,8 @@ An Ansible role to create and manage AWX instance group objects using the `awx.a
 
 This role allows you to create, update, or delete AWX instance groups defined in variables. Instance groups are used to organize and manage execution nodes in AWX, and can be configured with policies for instance selection and container group settings.
 
+For container groups, the role provides a default pod specification that can be customized using `pod_spec_override`. The role uses a deep merge strategy to combine your custom pod specification with the defaults: dictionaries are merged recursively, while lists are completely replaced. This allows you to override specific settings while preserving other default values.
+
 ## Requirements
 
 - Ansible 2.9 or higher
@@ -58,8 +60,51 @@ Each item in the `awx_instance_groups` list can contain:
 | `policy_instance_percentage` | Percentage of instances to use | No | - |
 | `policy_instance_list` | List of specific instances for policy | No | - |
 | `is_container_group` | Whether this is a container group | No | `false` |
-| `pod_spec_override` | Pod specification override for container groups | No | - |
+| `pod_spec_override` | Pod specification override for container groups (dictionary) | No | - |
 | `state` | State (present/absent) | No | `present` |
+
+**Note on `pod_spec_override`**: This variable should be provided as a dictionary (not a YAML string). The role uses a deep merge strategy to combine the default pod specification (`awx_instance_group_defaults.default_pod_spec`) with your custom `pod_spec_override`. When merging:
+- **Dictionaries are merged recursively**: Nested dictionary keys from your override will be merged with the default values
+- **Lists are overwritten**: If both the default and your override contain a list at the same path, your list will completely replace the default list
+
+This allows you to override specific fields (like container image, resources, or environment variables) while keeping other default values intact.
+
+### Pod Specification Deep Merge Strategy
+
+The role implements a deep merge strategy for `pod_spec_override` using Ansible's `combine` filter with `recursive=true`. This means:
+
+1. **Default Pod Specification**: The role provides a default pod specification in `awx_instance_group_defaults.default_pod_spec` that includes common settings like namespace, service account, and container configuration.
+
+2. **Deep Merge Behavior**:
+   - **Dictionary merging**: When you provide a dictionary value that exists in both the default and your override, the values are merged recursively. For example, if the default has `spec.containers[0].resources.requests.cpu: 250m` and you provide `spec.containers[0].resources.requests.memory: 1Gi`, both values will be present in the final result.
+   - **List overwriting**: When you provide a list value (like `spec.containers` or `spec.containers[0].env`), your entire list replaces the default list. This is because the `combine` filter does not merge lists, only dictionaries.
+
+3. **Example Merge**:
+   ```yaml
+   # Default pod spec has:
+   spec:
+     containers:
+       - name: worker
+         image: quay.io/ansible/awx-ee:latest
+         resources:
+           requests:
+             cpu: 250m
+             memory: 100Mi
+   
+   # Your override provides:
+   pod_spec_override:
+     spec:
+       containers:
+         - name: worker
+           resources:
+             requests:
+               memory: 512Mi
+   
+   # Result: The entire containers list is replaced, so you must include
+   # all container definitions you want. The default container is lost.
+   ```
+
+4. **Best Practice**: When overriding container specifications, include the complete container definition in your `pod_spec_override`, or structure your override to only modify dictionary values (like `metadata.labels` or `spec.serviceAccountName`) that will be merged with defaults.
 
 ## Dependencies
 
@@ -136,14 +181,10 @@ Each item in the `awx_instance_groups` list can contain:
     awx_instance_groups:
       - name: "Kubernetes Container Group"
         is_container_group: true
-        pod_spec_override: |
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: ansible-runner-pod
+        pod_spec_override:
           spec:
             containers:
-              - name: ansible-runner
+              - name: worker
                 image: quay.io/ansible/ansible-runner:latest
                 resources:
                   requests:
@@ -156,7 +197,7 @@ Each item in the `awx_instance_groups` list can contain:
     - awx_instance_groups
 ```
 
-### Container Group with Custom Pod Spec
+**Note**: The `pod_spec_override` is merged with the default pod specification. In this example, only the container definition will be overwritten.
 
 ```yaml
 - hosts: localhost
@@ -164,44 +205,35 @@ Each item in the `awx_instance_groups` list can contain:
     awx_instance_groups:
       - name: "Custom Container Group"
         is_container_group: true
-        pod_spec_override: |
-          {
-            "apiVersion": "v1",
-            "kind": "Pod",
-            "metadata": {
-              "name": "custom-ansible-runner",
-              "labels": {
-                "app": "ansible-runner"
-              }
-            },
-            "spec": {
-              "containers": [
-                {
-                  "name": "ansible-runner",
-                  "image": "quay.io/ansible/ansible-runner:latest",
-                  "env": [
-                    {
-                      "name": "ANSIBLE_FORCE_COLOR",
-                      "value": "true"
-                    }
-                  ],
-                  "resources": {
-                    "requests": {
-                      "memory": "1Gi",
-                      "cpu": "1000m"
-                    },
-                    "limits": {
-                      "memory": "2Gi",
-                      "cpu": "2000m"
-                    }
-                  }
-                }
-              ]
-            }
-          }
+        pod_spec_override:
+          metadata:
+            labels:
+              app: ansible-runner
+          spec:
+            serviceAccountName: awx-inventory-reader
+            automountServiceAccountToken: true
+            containers:
+              - name: worker
+                image: quay.io/ansible/ansible-runner:latest
+                env:
+                  - name: ANSIBLE_FORCE_COLOR
+                    value: "true"
+                resources:
+                  requests:
+                    memory: "1Gi"
+                    cpu: "1000m"
+                  limits:
+                    memory: "2Gi"
+                    cpu: "2000m"
   roles:
     - awx_instance_groups
 ```
+
+**Note**: This example demonstrates the deep merge behavior:
+- The `metadata.labels` dictionary is merged with defaults (if any)
+- The `spec.containers` list completely replaces the default containers list (lists are overwritten, not merged)
+- The `spec.serviceAccountName` and `spec.automountServiceAccountToken` override the default values
+- Other default values (like `apiVersion`, `kind`, `metadata.namespace`) are preserved from the default pod spec
 
 ### Using AWX Token Authentication
 
