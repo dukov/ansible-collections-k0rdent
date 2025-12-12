@@ -17,7 +17,13 @@
     policy_instance_percentage: "{{ item.policy_instance_percentage | default(omit) }}"
     policy_instance_list: "{{ item.policy_instance_list | default(omit) }}"
     is_container_group: "{{ item.is_container_group | default(awx_instance_group_defaults.is_container_group) }}"
-    pod_spec_override: "{{ item.pod_spec_override | default(omit) }}"
+    pod_spec_override: |
+      {%- set is_container_group = item.is_container_group | default(awx_instance_group_defaults.is_container_group) %}
+      {%- set pod_spec = omit %}
+      {%- if is_container_group and item.pod_spec_override %}
+        {%- set pod_spec = awx_instance_group_defaults.default_pod_spec | combine(item.pod_spec_override, recursive=true) %}
+      {%- endif %}
+      {{ pod_spec | to_nice_yaml(indent=2) }}
     state: "{{ item.state | default(awx_instance_group_defaults.state) }}"
     controller_host: "{{ awx_host }}"
     controller_username: "{{ awx_username }}"

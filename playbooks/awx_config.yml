@@ -14,25 +14,10 @@
             source_path: "{{ inventory_source_path }}"
     awx_instance_groups:
       - name: "default"
-        pod_spec_override: |
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            namespace: awx
+        pod_spec_override:
           spec:
             serviceAccountName: awx-inventory-reader
             automountServiceAccountToken: true
-            containers:
-              - image: quay.io/ansible/awx-ee:latest
-                name: worker
-                args:
-                  - ansible-runner
-                  - worker
-                  - '--private-data-dir=/runner'
-                resources:
-                  requests:
-                    cpu: 250m
-                    memory: 100Mi
   roles:
     - awx_credentials
     - awx_projects
