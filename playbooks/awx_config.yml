@@ -1,5 +1,6 @@
 - hosts: "{{ targets }}"
   roles:
+    - awx_organizations
     - awx_credentials
     - awx_projects
     - awx_inventories

@@ -1,0 +1,25 @@
+---
+# Default variables for awx_organizations role
+
+# List of organizations to create in AWX
+# Each organization is a dictionary with the following keys:
+#   - name: (required) Name of the organization
+#   - description: (optional) Description of the organization
+#   - max_hosts: (optional) Maximum number of hosts allowed
+#   - custom_virtualenv: (optional) Custom virtual environment path
+#   - galaxy_credentials: (optional) List of Galaxy credential names
+#   - instance_groups: (optional) List of instance group names
+#   - state: (optional) State of the organization (present/absent), defaults to 'present'
+awx_organizations: []
+
+# Default values for organizations (used when not specified in awx_organizations list)
+awx_organization_defaults:
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+

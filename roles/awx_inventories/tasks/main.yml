@@ -30,7 +30,7 @@
   awx.awx.inventory_source:
     name: "{{ item.1.name }}"
     inventory: "{{ item.0.name }}"
-    source: "{{ item.1.source | default(omit) }}"
+    source: "{{ inventory_source_type | default(omit) }}"
     source_project: "{{ item.1.source_project | default(omit) }}"
     source_path: "{{ item.1.source_path | default(omit) }}"
     credential: "{{ item.1.credential | default(omit) }}"
@@ -45,6 +45,13 @@
     controller_password: "{{ awx_password | default(omit) }}"
     controller_oauthtoken: "{{ awx_token | default(omit) }}"
     validate_certs: "{{ awx_validate_certs }}"
+  vars:
+    inventory_source_type: >-
+      {%- if item.1.source is defined -%}
+        {{ item.1.source }}
+      {%- elif item.1.source_project is defined -%}
+        scm
+      {%- endif -%}
   loop: "{{ awx_inventories | subelements('inventory_sources', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }} - {{ item.1.name }}"

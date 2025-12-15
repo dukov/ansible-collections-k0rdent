@@ -1,0 +1,30 @@
+---
+# Main tasks for awx_organizations role
+
+- name: Validate awx_organizations is a list
+  assert:
+    that:
+      - awx_organizations is defined
+      - awx_organizations is iterable
+    fail_msg: "awx_organizations must be defined as a list"
+    quiet: true
+
+- name: Create or update AWX organizations
+  awx.awx.organization:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    max_hosts: "{{ item.max_hosts | default(omit) }}"
+    custom_virtualenv: "{{ item.custom_virtualenv | default(omit) }}"
+    galaxy_credentials: "{{ item.galaxy_credentials | default(omit) }}"
+    instance_groups: "{{ item.instance_groups | default(omit) }}"
+    state: "{{ item.state | default(awx_organization_defaults.state) }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_organizations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: awx_organizations | length > 0
+
