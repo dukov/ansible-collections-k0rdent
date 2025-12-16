@@ -1,0 +1,54 @@
+---
+# Default variables for awx_job_templates role
+
+# List of job templates to create in AWX
+# Each job template is a dictionary with the following keys:
+#   - name: (required) Name of the job template
+#   - job_type: (optional) Job type (run, check), defaults to 'run'
+#   - inventory: (optional) Inventory name
+#   - project: (optional) Project name
+#   - playbook: (optional) Playbook path
+#   - credentials: (optional) List of credential names
+#   - organization: (optional) Organization name
+#   - description: (optional) Description of the job template
+#   - extra_vars: (optional) Extra variables in YAML or JSON format
+#   - limit: (optional) Host limit
+#   - verbosity: (optional) Verbosity level (0-5)
+#   - forks: (optional) Number of forks
+#   - timeout: (optional) Job timeout in seconds
+#   - ask_inventory_on_launch: (optional) Ask for inventory on launch
+#   - ask_variables_on_launch: (optional) Ask for variables on launch
+#   - ask_credential_on_launch: (optional) Ask for credential on launch
+#   - ask_tags_on_launch: (optional) Ask for tags on launch
+#   - ask_skip_tags_on_launch: (optional) Ask for skip tags on launch
+#   - ask_job_type_on_launch: (optional) Ask for job type on launch
+#   - ask_limit_on_launch: (optional) Ask for limit on launch
+#   - ask_verbosity_on_launch: (optional) Ask for verbosity on launch
+#   - ask_execution_environment_on_launch: (optional) Ask for execution environment on launch
+#   - ask_forks_on_launch: (optional) Ask for forks on launch
+#   - ask_timeout_on_launch: (optional) Ask for timeout on launch
+#   - execution_environment: (optional) Execution environment name
+#   - instance_groups: (optional) List of instance group names
+#   - schedules: (optional) List of schedule dictionaries for this job template
+#     Each schedule is a dictionary with:
+#       - name: (required) Name of the schedule
+#       - rrule: (required) Recurrence rule (RFC 5545 format)
+#       - description: (optional) Description of the schedule
+#       - enabled: (optional) Whether the schedule is enabled (default: true)
+#       - extra_data: (optional) Extra variables for the scheduled job
+#       - state: (optional) State (present/absent), defaults to 'present'
+#   - state: (optional) State of the job template (present/absent), defaults to 'present'
+awx_job_templates: []
+
+# Default values for job templates (used when not specified in awx_job_templates list)
+awx_job_template_defaults:
+  job_type: 'run'
+  state: 'present'
+
+# AWX connection settings (read from environment variables)
+awx_host: "{{ lookup('ansible.builtin.env', 'CONTROLLER_HOST', default='localhost') }}"
+awx_username: "{{ lookup('ansible.builtin.env', 'CONTROLLER_USERNAME', default='admin') }}"
+awx_password: "{{ lookup('ansible.builtin.env', 'CONTROLLER_PASSWORD', default=omit) }}"
+awx_token: "{{ lookup('ansible.builtin.env', 'CONTROLLER_OAUTH_TOKEN', default=omit) }}"
+awx_validate_certs: true
+

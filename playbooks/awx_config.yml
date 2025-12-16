@@ -5,3 +5,4 @@
     - awx_projects
     - awx_inventories
     - awx_instance_groups
+    - awx_job_templates
