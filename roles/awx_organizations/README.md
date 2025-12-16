@@ -6,6 +6,17 @@ An Ansible role to create and manage AWX organization objects using the `awx.awx
 
 This role allows you to create, update, or delete AWX organizations defined in variables. Organizations are used to group and manage resources (projects, inventories, credentials, etc.) in AWX, providing isolation and access control.
 
+### Ansible Galaxy Credentials
+
+This role automatically creates and assigns Ansible Galaxy credentials for each organization. This is required to enable collection installation during project repository synchronization. When AWX syncs a project repository that contains a `requirements.yml` file, it needs Galaxy credentials to execute `ansible-galaxy collection install -r requirements.yml`.
+
+**Important Notes:**
+- The role creates a default Ansible Galaxy credential named `"Ansible Galaxy Credential <organization_name>"` for each organization
+- The credential is configured to use the public Ansible Galaxy at `https://galaxy.ansible.com`
+- The credential is automatically assigned to the organization
+- **Custom Galaxy credential assignment is not supported**: This role only creates and assigns the default Galaxy credential. If you need to use custom Galaxy credentials, you must create them separately and assign them manually
+- The default credential enables collection installation from the public Ansible Galaxy during project sync operations
+
 ## Requirements
 
 - Ansible 2.9 or higher
@@ -56,7 +67,7 @@ Each item in the `awx_organizations` list can contain:
 | `description` | Description of the organization | No | - |
 | `max_hosts` | Maximum number of hosts allowed in this organization | No | - |
 | `custom_virtualenv` | Custom virtual environment path | No | - |
-| `galaxy_credentials` | List of Galaxy credential names | No | - |
+| `galaxy_credentials` | List of Galaxy credential names (Note: Custom assignment not supported - see Ansible Galaxy Credentials section) | No | - |
 | `instance_groups` | List of instance group names | No | - |
 | `state` | State (present/absent) | No | `present` |
 
@@ -112,7 +123,7 @@ Each item in the `awx_organizations` list can contain:
     - awx_organizations
 ```
 
-### Organization with Galaxy Credentials
+### Organization with Automatic Galaxy Credential
 
 ```yaml
 - hosts: localhost
@@ -120,11 +131,11 @@ Each item in the `awx_organizations` list can contain:
     awx_organizations:
       - name: "Production"
         description: "Production environment organization"
-        galaxy_credentials:
-          - "Galaxy Credential"
   roles:
     - awx_organizations
 ```
+
+**Note**: The role automatically creates an Ansible Galaxy credential named `"Ansible Galaxy Credential Production"` and assigns it to the organization. This enables collection installation from `requirements.yml` during project sync. The `galaxy_credentials` parameter in the organization definition is not used by this role - custom Galaxy credential assignment is not supported.
 
 ### Organization with Custom Virtual Environment
 
@@ -150,8 +161,6 @@ Each item in the `awx_organizations` list can contain:
         description: "Production environment organization"
         max_hosts: 1000
         custom_virtualenv: "/opt/venv/production"
-        galaxy_credentials:
-          - "Galaxy Credential"
         instance_groups:
           - "Production Executors"
       - name: "Staging"
@@ -162,6 +171,8 @@ Each item in the `awx_organizations` list can contain:
   roles:
     - awx_organizations
 ```
+
+**Note**: This example creates two organizations. The role automatically creates and assigns Ansible Galaxy credentials (`"Ansible Galaxy Credential Production"` and `"Ansible Galaxy Credential Staging"`) to enable collection installation during project sync operations.
 
 ### Using AWX Token Authentication
 
