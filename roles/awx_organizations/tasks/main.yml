@@ -9,13 +9,12 @@
     fail_msg: "awx_organizations must be defined as a list"
     quiet: true
 
-- name: Create or update AWX organizations
+- name: Create AWX organizations
   awx.awx.organization:
     name: "{{ item.name }}"
     description: "{{ item.description | default(omit) }}"
     max_hosts: "{{ item.max_hosts | default(omit) }}"
     custom_virtualenv: "{{ item.custom_virtualenv | default(omit) }}"
-    galaxy_credentials: "{{ item.galaxy_credentials | default(omit) }}"
     instance_groups: "{{ item.instance_groups | default(omit) }}"
     state: "{{ item.state | default(awx_organization_defaults.state) }}"
     controller_host: "{{ awx_host }}"
@@ -28,3 +27,42 @@
     label: "{{ item.name }}"
   when: awx_organizations | length > 0
 
+- name: Create Ansible Galaxy credential
+  awx.awx.credential:
+    name: "Ansible Galaxy Credential {{ item.name }}"
+    credential_type: "Ansible Galaxy/Automation Hub API Token"
+    description: "Ansible Galaxy credential for {{ item.name }}"
+    organization: "{{ item.name }}"
+    inputs:
+      url: "https://galaxy.ansible.com"
+    state: "present"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_organizations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - awx_organizations | length > 0
+
+- name: Update AWX organizations
+  awx.awx.organization:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    max_hosts: "{{ item.max_hosts | default(omit) }}"
+    galaxy_credentials: 
+      - "Ansible Galaxy Credential {{ item.name }}"
+    custom_virtualenv: "{{ item.custom_virtualenv | default(omit) }}"
+    instance_groups: "{{ item.instance_groups | default(omit) }}"
+    state: "{{ item.state | default(awx_organization_defaults.state) }}"
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password | default(omit) }}"
+    controller_oauthtoken: "{{ awx_token | default(omit) }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  loop: "{{ awx_organizations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: awx_organizations | length > 0
